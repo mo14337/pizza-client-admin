@@ -1,10 +1,51 @@
-import { Card, Form, Layout, Space, Input, Checkbox, Button, Flex } from "antd";
+import {
+  Card,
+  Form,
+  Layout,
+  Space,
+  Input,
+  Checkbox,
+  Button,
+  Flex,
+  Alert,
+} from "antd";
 import React from "react";
 import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons";
 import Logo from "../../components/Logo";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ICredentials } from "../../types";
+import { login, self } from "../../http/api";
+
+const getSelf = async () => {
+  const { data } = await self();
+  return data;
+};
+
+const loginUser = async (userData: ICredentials) => {
+  //server call logic
+  const { data } = await login(userData);
+  return data;
+};
 
 const Login: React.FC = () => {
+  const { data: selfData, refetch } = useQuery({
+    queryKey: ["self"],
+    queryFn: getSelf,
+    enabled: false,
+  });
+
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationKey: ["login"],
+    mutationFn: loginUser,
+    onSuccess: async () => {
+      // call self api
+      refetch();
+      console.log(selfData);
+    },
+  });
+
   return (
+    <>
       <Layout
         style={{ height: "100vh", display: "grid", placeItems: "center" }}
       >
@@ -29,7 +70,24 @@ const Login: React.FC = () => {
               </Space>
             }
           >
-            <Form initialValues={{ remember: true }}>
+            <Form
+              onFinish={(values) => {
+                mutate({
+                  email: values.username,
+                  password: values.password,
+                  remember: values.remember,
+                });
+                // console.log(values);
+              }}
+              initialValues={{ remember: true }}
+            >
+              {isError && (
+                <Alert
+                  style={{ marginBottom: "10px" }}
+                  type="error"
+                  message={error.message}
+                />
+              )}
               <Form.Item
                 name={"username"}
                 rules={[
@@ -76,6 +134,7 @@ const Login: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                   style={{ width: "100%" }}
+                  loading={isPending}
                 >
                   Log in
                 </Button>
