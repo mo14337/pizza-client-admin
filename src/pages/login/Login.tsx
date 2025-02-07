@@ -32,6 +32,16 @@ const loginUser = async (userData: ICredentials) => {
 const Login: React.FC = () => {
   const { setUser, logout: logoutFromStore } = useAuthStore();
   const { isAllowed } = usePermission();
+
+  const { mutate: logoutMutate } = useMutation({
+    mutationKey: ["logout"],
+    mutationFn: logout,
+    onSuccess: async () => {
+      logoutFromStore();
+      return;
+    },
+  });
+
   const { refetch } = useQuery({
     queryKey: ["self"],
     queryFn: getSelf,
@@ -45,8 +55,8 @@ const Login: React.FC = () => {
       // call self api
       const { data: userData } = await refetch();
       if (!isAllowed(userData)) {
-        await logout();
-        logoutFromStore();
+        logoutMutate();
+
         return;
       }
 
