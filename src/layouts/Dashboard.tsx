@@ -1,15 +1,83 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useAuthStore } from "../store";
+import { Layout, Menu, theme } from "antd";
+import Sider from "antd/es/layout/Sider";
+import { Content, Footer, Header } from "antd/es/layout/layout";
+import {
+  GiftOutlined,
+  HomeOutlined,
+  ProductOutlined,
+  ShopOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { useState } from "react";
+import Logo from "../components/Logo";
 
+const items = [
+  {
+    key: "/",
+    icon: <HomeOutlined />,
+    label: <NavLink to={"/"}>Home</NavLink>,
+  },
+  {
+    key: "/users",
+    icon: <UserOutlined />,
+    label: <NavLink to={"/users"}>Users</NavLink>,
+  },
+  {
+    key: "/restaurants",
+    icon: <ShopOutlined />,
+    label: <NavLink to={"/resturants"}>Restaurants</NavLink>,
+  },
+  {
+    key: "/Products",
+    icon: <ProductOutlined />,
+    label: <NavLink to={"/products"}>Products</NavLink>,
+  },
+  {
+    key: "/promos",
+    icon: <GiftOutlined />,
+    label: <NavLink to={"/promos"}>Promos</NavLink>,
+  },
+];
 const Dashboard = () => {
+  const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuthStore();
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
+
   if (!user) {
     return <Navigate to={"/auth/login"} replace={true} />;
   }
   return (
-    <>
-      <Outlet />
-    </>
+    <div>
+      <Layout style={{ minHeight: "100vh" }}>
+        <Sider
+          theme="light"
+          collapsible
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}
+        >
+          <div className="sidebar-logo">
+            <Logo />
+          </div>
+          <Menu
+            theme="light"
+            defaultSelectedKeys={["/"]}
+            mode="inline"
+            items={items}
+          />
+        </Sider>
+        <Layout>
+          <Header style={{ padding: 0, background: colorBgContainer }} />
+          <Content style={{ margin: "0 16px" }}>
+            <Outlet />
+          </Content>
+          <Footer style={{ textAlign: "center" }}>Mern Pizza app</Footer>
+        </Layout>
+      </Layout>
+    </div>
   );
 };
 
