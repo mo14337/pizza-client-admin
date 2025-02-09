@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store";
 import {
   Avatar,
@@ -25,37 +25,46 @@ import Logo from "../components/Logo";
 import { logout } from "../http/api";
 import { useMutation } from "@tanstack/react-query";
 
-const items = [
-  {
-    key: "/",
-    icon: <HomeOutlined />,
-    label: <NavLink to={"/"}>Home</NavLink>,
-  },
-  {
-    key: "/users",
-    icon: <UserOutlined />,
-    label: <NavLink to={"/users"}>Users</NavLink>,
-  },
-  {
-    key: "/restaurants",
-    icon: <ShopOutlined />,
-    label: <NavLink to={"/resturants"}>Restaurants</NavLink>,
-  },
-  {
-    key: "/Products",
-    icon: <ProductOutlined />,
-    label: <NavLink to={"/products"}>Products</NavLink>,
-  },
-  {
-    key: "/promos",
-    icon: <GiftOutlined />,
-    label: <NavLink to={"/promos"}>Promos</NavLink>,
-  },
-];
+const getMenuItems = (role: string) => {
+  const baseItems = [
+    {
+      key: "/",
+      icon: <HomeOutlined />,
+      label: <NavLink to={"/"}>Home</NavLink>,
+    },
 
+    {
+      key: "/restaurants",
+      icon: <ShopOutlined />,
+      label: <NavLink to={"/resturants"}>Restaurants</NavLink>,
+    },
+    {
+      key: "/Products",
+      icon: <ProductOutlined />,
+      label: <NavLink to={"/products"}>Products</NavLink>,
+    },
+    {
+      key: "/promos",
+      icon: <GiftOutlined />,
+      label: <NavLink to={"/promos"}>Promos</NavLink>,
+    },
+  ];
+  if (role === "admin") {
+    const menus = [...baseItems];
+    menus.splice(1, 0, {
+      key: "/users",
+      icon: <UserOutlined />,
+      label: <NavLink to={"/users"}>Users</NavLink>,
+    });
+    return menus;
+  }
+  return baseItems;
+};
+const adminOnlyRoutes = ["/users"];
 const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout: logoutFromStore } = useAuthStore();
+  const { pathname } = useLocation();
 
   const { mutate: logoutMutate } = useMutation({
     mutationKey: ["logout"],
@@ -71,6 +80,9 @@ const Dashboard = () => {
 
   if (!user) {
     return <Navigate to={"/auth/login"} replace={true} />;
+  }
+  if (user.role !== "admin" && adminOnlyRoutes.includes(pathname)) {
+    return <Navigate to={"/"} replace={true} />;
   }
   return (
     <div>
@@ -88,7 +100,7 @@ const Dashboard = () => {
             theme="light"
             defaultSelectedKeys={["/"]}
             mode="inline"
-            items={items}
+            items={getMenuItems(user.role)}
           />
         </Sider>
         <Layout>
