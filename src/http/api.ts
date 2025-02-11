@@ -9,3 +9,6 @@ export const logout = () => api.post("/auth/logout");
 
 // users
 export const getUsers = () => api.get("/users");
+
+//tenants
+export const getTenants = () => api.get("/tenants");

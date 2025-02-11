@@ -34,9 +34,9 @@ const getMenuItems = (role: string) => {
     },
 
     {
-      key: "/restaurants",
+      key: "/tenants",
       icon: <ShopOutlined />,
-      label: <NavLink to={"/resturants"}>Restaurants</NavLink>,
+      label: <NavLink to={"/tenants"}>Tenants</NavLink>,
     },
     {
       key: "/Products",
