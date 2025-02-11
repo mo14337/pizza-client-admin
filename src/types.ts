@@ -3,3 +3,9 @@ export interface ICredentials {
   password: string;
   remember: boolean;
 }
+
+export type Tenant = {
+  address: string;
+  name: string;
+  id: number;
+};
