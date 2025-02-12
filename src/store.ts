@@ -15,6 +15,16 @@ export interface User {
   tenant?: ITenant;
 }
 
+export interface CreateUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  tenantId?: ITenant;
+  password?: string;
+}
+
 interface AuthState {
   user: User | null;
   setUser: (user: User) => void;

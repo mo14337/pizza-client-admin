@@ -1,3 +1,4 @@
+import { CreateUser } from "../store";
 import { ICredentials } from "../types";
 import { api } from "./client";
 
@@ -9,6 +10,7 @@ export const logout = () => api.post("/auth/logout");
 
 // users
 export const getUsers = () => api.get("/users");
+export const createUsers = (data: CreateUser) => api.post("/users", data);
 
 //tenants
 export const getTenants = () => api.get("/tenants");
