@@ -1,5 +1,5 @@
 import { CreateUser } from "../store";
-import { ICredentials } from "../types";
+import { ICredentials, Tenant } from "../types";
 import { api } from "./client";
 
 //Auth service
@@ -14,3 +14,4 @@ export const createUsers = (data: CreateUser) => api.post("/users", data);
 
 //tenants
 export const getTenants = () => api.get("/tenants");
+export const createTenant = (data: Tenant) => api.post("/tenants", data);
