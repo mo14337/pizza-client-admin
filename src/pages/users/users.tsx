@@ -1,7 +1,26 @@
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Flex,
+  Form,
+  Space,
+  Spin,
+  Table,
+  theme,
+} from "antd";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createUsers, getUsers } from "../../http/api";
 import { CreateUser, User } from "../../store";
 import UserFilter from "./components/UserFilter";
@@ -50,7 +69,7 @@ const Users = () => {
   const [addUserDrawerOpen, setAddUserDrawerOpen] = useState(false);
   const {
     data: usersData,
-    isLoading,
+    isFetching,
     isError,
     error,
     refetch,
@@ -62,6 +81,7 @@ const Users = () => {
       ).toString();
       return await getUsers(queryString).then((res) => res.data);
     },
+    placeholderData: keepPreviousData,
   });
 
   const { mutate: createUserMutation } = useMutation({
@@ -88,12 +108,17 @@ const Users = () => {
   return (
     <>
       <Space direction="vertical" size={"middle"} style={{ width: "100%" }}>
-        <Breadcrumb
-          separator={<RightOutlined />}
-          items={[{ title: <Link to="/">Dashboard</Link> }, { title: "Users" }]}
-        />
-        {isLoading && <div>Loading...</div>}
-        {isError && <div>{error.message}</div>}
+        <Flex justify="space-between">
+          <Breadcrumb
+            separator={<RightOutlined />}
+            items={[
+              { title: <Link to="/">Dashboard</Link> },
+              { title: "Users" },
+            ]}
+          />
+          {isFetching && <Spin indicator={<LoadingOutlined />} />}
+          {isError && <div>{error.message}</div>}
+        </Flex>
         <UserFilter
           onFilterChange={(filterName: string, value: string) => {
             console.log(filterName, value);
