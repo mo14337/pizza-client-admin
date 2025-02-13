@@ -8,6 +8,7 @@ import { useState } from "react";
 import RestaurantFilter from "./components/TenantFilter";
 import { Tenant } from "../../types";
 import TenantForm from "./components/TenantForm";
+import { currentPage, perPage } from "../../constant";
 
 const columns = [
   {
@@ -34,15 +35,22 @@ const Tenants = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [restaurantDrawerOpen, setAddRestaurantDrawerOpen] = useState(false);
+  const [queryParams, setQueryParams] = useState({
+    perPage: perPage,
+    currentPage: currentPage,
+  });
   const {
     data: tenantData,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["tenants"],
+    queryKey: ["tenants", queryParams],
     queryFn: async () => {
-      return await getTenants().then((res) => res.data);
+      const queryString = new URLSearchParams(
+        queryParams as unknown as Record<string, string>
+      ).toString();
+      return await getTenants(queryString).then((res) => res.data);
     },
   });
 
@@ -94,7 +102,22 @@ const Tenants = () => {
           </Button>
         </RestaurantFilter>
 
-        <Table columns={columns} rowKey={"id"} dataSource={tenantData?.data} />
+        <Table
+          pagination={{
+            total: tenantData?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            onChange: (page) => {
+              setQueryParams((prev) => ({
+                ...prev,
+                currentPage: page,
+              }));
+            },
+          }}
+          columns={columns}
+          rowKey={"id"}
+          dataSource={tenantData?.data}
+        />
         <Drawer
           styles={{
             body: {

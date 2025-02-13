@@ -1,2 +1,2 @@
-export const perPage = 6;
+export const perPage = 1;
 export const currentPage = 1;
