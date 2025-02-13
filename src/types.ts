@@ -9,3 +9,8 @@ export type Tenant = {
   name: string;
   id: number;
 };
+
+export type FieldData = {
+  name: string;
+  value?: string;
+};

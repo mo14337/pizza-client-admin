@@ -27,6 +27,7 @@ import UserFilter from "./components/UserFilter";
 import { useState } from "react";
 import UserForm from "./components/UserForm";
 import { currentPage, perPage } from "../../constant";
+import { FieldData } from "../../types";
 
 const columns = [
   {
@@ -60,6 +61,7 @@ const columns = [
 
 const Users = () => {
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
   const queryClient = useQueryClient();
   const [queryParams, setQueryParams] = useState({
     perPage: perPage,
@@ -76,8 +78,11 @@ const Users = () => {
   } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: async () => {
+      const filtredParams = Object.entries(queryParams).filter(
+        (item) => !!item[1]
+      );
       const queryString = new URLSearchParams(
-        queryParams as unknown as Record<string, string>
+        filtredParams as unknown as Record<string, string>
       ).toString();
       return await getUsers(queryString).then((res) => res.data);
     },
@@ -104,6 +109,16 @@ const Users = () => {
     form.resetFields();
     setAddUserDrawerOpen(false);
   }
+  const onFilterChange = (changeField: FieldData[]) => {
+    const changeFilterFields = changeField
+      .map((item) => {
+        return {
+          [item.name[0]]: item.value,
+        };
+      })
+      .reduce((acc, item) => ({ ...acc, ...item }));
+    setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+  };
 
   return (
     <>
@@ -119,19 +134,17 @@ const Users = () => {
           {isFetching && <Spin indicator={<LoadingOutlined />} />}
           {isError && <div>{error.message}</div>}
         </Flex>
-        <UserFilter
-          onFilterChange={(filterName: string, value: string) => {
-            console.log(filterName, value);
-          }}
-        >
-          <Button
-            onClick={() => setAddUserDrawerOpen(true)}
-            icon={<PlusOutlined />}
-            type="primary"
-          >
-            Add User
-          </Button>
-        </UserFilter>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
+          <UserFilter>
+            <Button
+              onClick={() => setAddUserDrawerOpen(true)}
+              icon={<PlusOutlined />}
+              type="primary"
+            >
+              Add User
+            </Button>
+          </UserFilter>
+        </Form>
 
         <Table
           pagination={{

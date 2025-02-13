@@ -1,12 +1,31 @@
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Flex,
+  Form,
+  Space,
+  Spin,
+  Table,
+  theme,
+} from "antd";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createTenant, getTenants } from "../../http/api";
 import { ITenant } from "../../store";
 import { useState } from "react";
 import RestaurantFilter from "./components/TenantFilter";
-import { Tenant } from "../../types";
+import { FieldData, Tenant } from "../../types";
 import TenantForm from "./components/TenantForm";
 import { currentPage, perPage } from "../../constant";
 
@@ -32,6 +51,7 @@ const columns = [
 ];
 
 const Tenants = () => {
+  const [filterForm] = Form.useForm();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [restaurantDrawerOpen, setAddRestaurantDrawerOpen] = useState(false);
@@ -41,17 +61,21 @@ const Tenants = () => {
   });
   const {
     data: tenantData,
-    isLoading,
+    isFetching,
     isError,
     error,
   } = useQuery({
     queryKey: ["tenants", queryParams],
     queryFn: async () => {
+      const filtredParams = Object.entries(queryParams).filter(
+        (item) => !!item[1]
+      );
       const queryString = new URLSearchParams(
-        queryParams as unknown as Record<string, string>
+        filtredParams as unknown as Record<string, string>
       ).toString();
       return await getTenants(queryString).then((res) => res.data);
     },
+    placeholderData: keepPreviousData,
   });
 
   const { mutate: createUserMutation } = useMutation({
@@ -73,35 +97,48 @@ const Tenants = () => {
     form.resetFields();
     setAddRestaurantDrawerOpen(false);
   }
+  const onFilterChange = (changeField: FieldData[]) => {
+    const changeFilterFields = changeField
+      .map((item) => {
+        return {
+          [item.name[0]]: item.value,
+        };
+      })
+      .reduce((acc, item) => ({ ...acc, ...item }));
+    setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+  };
   return (
     <>
       <Space direction="vertical" size={"middle"} style={{ width: "100%" }}>
-        <Breadcrumb
-          separator={<RightOutlined />}
-          items={[
-            { title: <Link to="/">Dashboard</Link> },
-            { title: "Tenants" },
-          ]}
-        />
-        {isLoading && <div>Loading...</div>}
-        {isError && <div>{error.message}</div>}
-        <RestaurantFilter
-          onFilterChange={(filterName: string, value: string) => {
-            console.log(filterName, value);
-          }}
-        >
-          <Button
-            onClick={() => {
-              setAddRestaurantDrawerOpen(true);
-              form.resetFields();
+        <Flex justify="space-between">
+          <Breadcrumb
+            separator={<RightOutlined />}
+            items={[
+              { title: <Link to="/">Dashboard</Link> },
+              { title: "Users" },
+            ]}
+          />
+          {isFetching && <Spin indicator={<LoadingOutlined />} />}
+          {isError && <div>{error.message}</div>}
+        </Flex>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
+          <RestaurantFilter
+            onFilterChange={(filterName: string, value: string) => {
+              console.log(filterName, value);
             }}
-            icon={<PlusOutlined />}
-            type="primary"
           >
-            Add Tenant
-          </Button>
-        </RestaurantFilter>
-
+            <Button
+              onClick={() => {
+                setAddRestaurantDrawerOpen(true);
+                form.resetFields();
+              }}
+              icon={<PlusOutlined />}
+              type="primary"
+            >
+              Add Tenant
+            </Button>
+          </RestaurantFilter>
+        </Form>
         <Table
           pagination={{
             total: tenantData?.total,
