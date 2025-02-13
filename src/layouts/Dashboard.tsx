@@ -79,7 +79,7 @@ const Dashboard = () => {
   } = theme.useToken();
 
   if (!user) {
-    return <Navigate to={"/auth/login"} replace={true} />;
+    return <Navigate to={`/auth/login?returnTo=${pathname}`} replace={true} />;
   }
   if (user.role !== "admin" && adminOnlyRoutes.includes(pathname)) {
     return <Navigate to={"/"} replace={true} />;
