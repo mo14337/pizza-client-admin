@@ -7,6 +7,7 @@ import { CreateUser, User } from "../../store";
 import UserFilter from "./components/UserFilter";
 import { useState } from "react";
 import UserForm from "./components/UserForm";
+import { currentPage, perPage } from "../../constant";
 
 const columns = [
   {
@@ -41,6 +42,10 @@ const columns = [
 const Users = () => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+  const [queryParams, setQueryParams] = useState({
+    perPage: perPage,
+    currentPage: currentPage,
+  });
 
   const [addUserDrawerOpen, setAddUserDrawerOpen] = useState(false);
   const {
@@ -50,9 +55,12 @@ const Users = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", queryParams],
     queryFn: async () => {
-      return await getUsers().then((res) => res.data);
+      const queryString = new URLSearchParams(
+        queryParams as unknown as Record<string, string>
+      ).toString();
+      return await getUsers(queryString).then((res) => res.data);
     },
   });
 
@@ -100,7 +108,22 @@ const Users = () => {
           </Button>
         </UserFilter>
 
-        <Table columns={columns} rowKey={"id"} dataSource={usersData} />
+        <Table
+          pagination={{
+            total: usersData?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            onChange: (page) => {
+              setQueryParams((prev) => ({
+                ...prev,
+                currentPage: page,
+              }));
+            },
+          }}
+          columns={columns}
+          rowKey={"id"}
+          dataSource={usersData?.data}
+        />
         <Drawer
           styles={{
             body: {
