@@ -98,7 +98,7 @@ const Dashboard = () => {
           </div>
           <Menu
             theme="light"
-            defaultSelectedKeys={["/"]}
+            defaultSelectedKeys={[pathname]}
             mode="inline"
             items={getMenuItems(user.role)}
           />
