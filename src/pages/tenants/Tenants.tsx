@@ -103,7 +103,7 @@ const Tenants = () => {
     return debounce((value: string | undefined) => {
       console.log("heyy");
       setQueryParams((prev) => ({ ...prev, q: value }));
-    }, 1000);
+    }, 500);
   }, []);
   const onFilterChange = (changeField: FieldData[]) => {
     const changeFilterFields = changeField
