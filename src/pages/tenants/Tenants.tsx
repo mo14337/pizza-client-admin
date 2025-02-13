@@ -101,8 +101,7 @@ const Tenants = () => {
 
   const deBounceQUpdate = useMemo(() => {
     return debounce((value: string | undefined) => {
-      console.log("heyy");
-      setQueryParams((prev) => ({ ...prev, q: value }));
+      setQueryParams((prev) => ({ ...prev, q: value, currentPage: 1 }));
     }, 500);
   }, []);
   const onFilterChange = (changeField: FieldData[]) => {
@@ -116,7 +115,11 @@ const Tenants = () => {
     if ("q" in changeFilterFields) {
       deBounceQUpdate(changeFilterFields.q);
     } else {
-      setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+      setQueryParams((prev) => ({
+        ...prev,
+        ...changeFilterFields,
+        currentPage: 1,
+      }));
     }
   };
   return (
