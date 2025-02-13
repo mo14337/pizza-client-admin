@@ -24,10 +24,11 @@ import {
 import { createUsers, getUsers } from "../../http/api";
 import { CreateUser, User } from "../../store";
 import UserFilter from "./components/UserFilter";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import UserForm from "./components/UserForm";
 import { currentPage, perPage } from "../../constant";
 import { FieldData } from "../../types";
+import { debounce } from "lodash";
 
 const columns = [
   {
@@ -109,6 +110,12 @@ const Users = () => {
     form.resetFields();
     setAddUserDrawerOpen(false);
   }
+  const deBounceQUpdate = useMemo(() => {
+    return debounce((value: string | undefined) => {
+      console.log("heyy");
+      setQueryParams((prev) => ({ ...prev, q: value }));
+    }, 1000);
+  }, []);
   const onFilterChange = (changeField: FieldData[]) => {
     const changeFilterFields = changeField
       .map((item) => {
@@ -117,7 +124,11 @@ const Users = () => {
         };
       })
       .reduce((acc, item) => ({ ...acc, ...item }));
-    setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+    if ("q" in changeFilterFields) {
+      deBounceQUpdate(changeFilterFields.q);
+    } else {
+      setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+    }
   };
 
   return (

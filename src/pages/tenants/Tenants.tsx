@@ -23,11 +23,12 @@ import {
 } from "@tanstack/react-query";
 import { createTenant, getTenants } from "../../http/api";
 import { ITenant } from "../../store";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import RestaurantFilter from "./components/TenantFilter";
 import { FieldData, Tenant } from "../../types";
 import TenantForm from "./components/TenantForm";
 import { currentPage, perPage } from "../../constant";
+import { debounce } from "lodash";
 
 const columns = [
   {
@@ -97,6 +98,13 @@ const Tenants = () => {
     form.resetFields();
     setAddRestaurantDrawerOpen(false);
   }
+
+  const deBounceQUpdate = useMemo(() => {
+    return debounce((value: string | undefined) => {
+      console.log("heyy");
+      setQueryParams((prev) => ({ ...prev, q: value }));
+    }, 1000);
+  }, []);
   const onFilterChange = (changeField: FieldData[]) => {
     const changeFilterFields = changeField
       .map((item) => {
@@ -105,7 +113,11 @@ const Tenants = () => {
         };
       })
       .reduce((acc, item) => ({ ...acc, ...item }));
-    setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+    if ("q" in changeFilterFields) {
+      deBounceQUpdate(changeFilterFields.q);
+    } else {
+      setQueryParams((prev) => ({ ...prev, ...changeFilterFields }));
+    }
   };
   return (
     <>
