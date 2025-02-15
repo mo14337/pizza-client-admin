@@ -1,11 +1,10 @@
 import { Card, Col, Form, Input, Row } from "antd";
 import { ReactNode } from "react";
 type UserFilterProps = {
-  onFilterChange: (filterName: string, filterValue: string) => void;
   children: ReactNode;
 };
 
-const TenantFilter = ({ onFilterChange, children }: UserFilterProps) => {
+const TenantFilter = ({ children }: UserFilterProps) => {
   return (
     <>
       <Card>
@@ -14,13 +13,7 @@ const TenantFilter = ({ onFilterChange, children }: UserFilterProps) => {
             <Row gutter={20}>
               <Col span={8}>
                 <Form.Item name={"q"}>
-                  <Input.Search
-                    placeholder="Search"
-                    allowClear
-                    onChange={(e) =>
-                      onFilterChange("userSearchQuery", e.target.value)
-                    }
-                  />
+                  <Input.Search placeholder="Search" allowClear />
                 </Form.Item>
               </Col>
             </Row>

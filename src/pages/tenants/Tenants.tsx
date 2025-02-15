@@ -21,9 +21,9 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createTenant, getTenants } from "../../http/api";
+import { createTenant, getTenants, updateTenant } from "../../http/api";
 import { ITenant } from "../../store";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RestaurantFilter from "./components/TenantFilter";
 import { FieldData, Tenant } from "../../types";
 import TenantForm from "./components/TenantForm";
@@ -52,6 +52,8 @@ const columns = [
 ];
 
 const Tenants = () => {
+  const [currentEditingTenant, setCurrentEditingTenant] =
+    useState<Tenant | null>(null);
   const [filterForm] = Form.useForm();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
@@ -79,8 +81,8 @@ const Tenants = () => {
     placeholderData: keepPreviousData,
   });
 
-  const { mutate: createUserMutation } = useMutation({
-    mutationKey: ["tenant"],
+  const { mutate: createTenantMutation } = useMutation({
+    mutationKey: ["createTenant"],
     mutationFn: async (data: Tenant) =>
       createTenant(data).then((res) => res.data),
     onSuccess: () => {
@@ -88,15 +90,39 @@ const Tenants = () => {
     },
   });
 
+  const { mutate: updateTenantMutation } = useMutation({
+    mutationKey: ["createTenant"],
+    mutationFn: async (data: Tenant) =>
+      updateTenant(data, currentEditingTenant!.id).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+    },
+  });
+
+  useEffect(() => {
+    if (currentEditingTenant) {
+      form.setFieldsValue(currentEditingTenant);
+      setAddRestaurantDrawerOpen(true);
+    }
+  }, [currentEditingTenant, form]);
+
   const {
     token: { colorBgLayout },
   } = theme.useToken();
 
   async function handleSubmit() {
+    const isEditMode = !!currentEditingTenant;
     await form.validateFields();
-    createUserMutation(form.getFieldsValue());
-    form.resetFields();
+
+    if (isEditMode) {
+      await updateTenantMutation(form.getFieldsValue());
+    } else {
+      await createTenantMutation(form.getFieldsValue());
+    }
+
     setAddRestaurantDrawerOpen(false);
+    form.resetFields();
+    setCurrentEditingTenant(null);
   }
 
   const deBounceQUpdate = useMemo(() => {
@@ -137,11 +163,7 @@ const Tenants = () => {
           {isError && <div>{error.message}</div>}
         </Flex>
         <Form form={filterForm} onFieldsChange={onFilterChange}>
-          <RestaurantFilter
-            onFilterChange={(filterName: string, value: string) => {
-              console.log(filterName, value);
-            }}
-          >
+          <RestaurantFilter>
             <Button
               onClick={() => {
                 setAddRestaurantDrawerOpen(true);
@@ -166,7 +188,24 @@ const Tenants = () => {
               }));
             },
           }}
-          columns={columns}
+          columns={[
+            ...columns,
+            {
+              title: "Actions",
+              render: (_: string, record: Tenant) => {
+                return (
+                  <Space>
+                    <Button
+                      onClick={() => setCurrentEditingTenant(record)}
+                      type="link"
+                    >
+                      Edit
+                    </Button>
+                  </Space>
+                );
+              },
+            },
+          ]}
           rowKey={"id"}
           dataSource={tenantData?.data}
         />
@@ -177,15 +216,19 @@ const Tenants = () => {
             },
           }}
           open={restaurantDrawerOpen}
-          title="Create Tenant"
+          title={currentEditingTenant ? "Edit Tenant" : "Create Tenant"}
           width={720}
           destroyOnClose={true}
-          onClose={() => setAddRestaurantDrawerOpen(false)}
+          onClose={() => {
+            setAddRestaurantDrawerOpen(false);
+            setCurrentEditingTenant(null);
+          }}
           extra={
             <Space>
               <Button
                 onClick={() => {
                   setAddRestaurantDrawerOpen(false);
+                  setCurrentEditingTenant(null);
                   form.resetFields();
                 }}
               >
