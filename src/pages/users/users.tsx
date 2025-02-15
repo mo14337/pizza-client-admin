@@ -21,10 +21,10 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createUsers, getUsers } from "../../http/api";
+import { createUsers, getUsers, updateUser } from "../../http/api";
 import { CreateUser, User } from "../../store";
 import UserFilter from "./components/UserFilter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UserForm from "./components/UserForm";
 import { currentPage, perPage } from "../../constant";
 import { FieldData } from "../../types";
@@ -69,6 +69,9 @@ const columns = [
 ];
 
 const Users = () => {
+  const [currentEditingUser, setCurrentEditingUser] = useState<User | null>(
+    null
+  );
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
   const queryClient = useQueryClient();
@@ -83,7 +86,6 @@ const Users = () => {
     isFetching,
     isError,
     error,
-    refetch,
   } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: async () => {
@@ -99,9 +101,18 @@ const Users = () => {
   });
 
   const { mutate: createUserMutation } = useMutation({
-    mutationKey: ["user"],
+    mutationKey: ["createUser"],
     mutationFn: async (data: CreateUser) =>
       createUsers(data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
+  const { mutate: updateUserMutation } = useMutation({
+    mutationKey: ["updateUser"],
+    mutationFn: async (data: CreateUser) =>
+      updateUser(data, currentEditingUser!.id).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
@@ -111,16 +122,32 @@ const Users = () => {
     token: { colorBgLayout },
   } = theme.useToken();
 
+  useEffect(() => {
+    if (currentEditingUser) {
+      setAddUserDrawerOpen(true);
+      form.setFieldsValue({
+        ...currentEditingUser,
+        tenantId: currentEditingUser.tenant?.id,
+      });
+    }
+  }, [currentEditingUser, form]);
+
   async function handleSubmit() {
+    const isEditMode = !!currentEditingUser;
     await form.validateFields();
-    createUserMutation(form.getFieldsValue());
-    await refetch();
-    form.resetFields();
+
+    if (isEditMode) {
+      await updateUserMutation(form.getFieldsValue());
+    } else {
+      await createUserMutation(form.getFieldsValue());
+    }
+
     setAddUserDrawerOpen(false);
+    form.resetFields();
+    setCurrentEditingUser(null);
   }
   const deBounceQUpdate = useMemo(() => {
     return debounce((value: string | undefined) => {
-      console.log("heyy");
       setQueryParams((prev) => ({ ...prev, q: value, currentPage: 1 }));
     }, 500);
   }, []);
@@ -142,7 +169,6 @@ const Users = () => {
       }));
     }
   };
-
   return (
     <>
       <Space direction="vertical" size={"middle"} style={{ width: "100%" }}>
@@ -181,7 +207,24 @@ const Users = () => {
               }));
             },
           }}
-          columns={columns}
+          columns={[
+            ...columns,
+            {
+              title: "Actions",
+              render: (_: string, record: User) => {
+                return (
+                  <Space>
+                    <Button
+                      onClick={() => setCurrentEditingUser(record)}
+                      type="link"
+                    >
+                      Edit
+                    </Button>
+                  </Space>
+                );
+              },
+            },
+          ]}
           rowKey={"id"}
           dataSource={usersData?.data}
         />
@@ -192,11 +235,12 @@ const Users = () => {
             },
           }}
           open={addUserDrawerOpen}
-          title="Create user"
+          title={currentEditingUser ? "Edit User" : "Create user"}
           width={720}
           destroyOnClose={true}
           onClose={() => {
             setAddUserDrawerOpen(false);
+            setCurrentEditingUser(null);
             form.resetFields();
           }}
           extra={
@@ -204,6 +248,7 @@ const Users = () => {
               <Button
                 onClick={() => {
                   setAddUserDrawerOpen(false);
+                  setCurrentEditingUser(null);
                   form.resetFields();
                 }}
               >
@@ -215,8 +260,8 @@ const Users = () => {
             </Space>
           }
         >
-          <Form layout="vertical" form={form}>
-            <UserForm />
+          <Form autoComplete="off" layout="vertical" form={form}>
+            <UserForm isEditMode={!!currentEditingUser} />
           </Form>
         </Drawer>
       </Space>
