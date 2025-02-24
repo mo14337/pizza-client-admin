@@ -4,8 +4,23 @@ type ProductFilterProps = {
   children: ReactNode;
 };
 import { Typography } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { getCategories, getTenants } from "../../../http/api";
+import { ICategory, Tenant } from "../../../types";
 const { Text } = Typography;
 const ProductFilters = ({ children }: ProductFilterProps) => {
+  const { data: tenantData } = useQuery({
+    queryKey: ["tenants"],
+    queryFn: async () => {
+      return await getTenants().then((res) => res.data.data);
+    },
+  });
+  const { data: catgeoryData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      return await getCategories().then((res) => res.data.data);
+    },
+  });
   return (
     <>
       <Card>
@@ -25,8 +40,13 @@ const ProductFilters = ({ children }: ProductFilterProps) => {
                     allowClear
                     placeholder="Select Category"
                   >
-                    <Select.Option value={"pizza"}>Pizza</Select.Option>
-                    <Select.Option value={"beverages"}>Beverages</Select.Option>
+                    {catgeoryData?.map((item: ICategory) => {
+                      return (
+                        <Select.Option key={item._id} value={item._id}>
+                          {item.name}
+                        </Select.Option>
+                      );
+                    })}
                   </Select>
                 </Form.Item>
               </Col>
@@ -38,8 +58,13 @@ const ProductFilters = ({ children }: ProductFilterProps) => {
                     allowClear
                     placeholder="Select Tenant"
                   >
-                    <Select.Option value={"delhi-ncr"}>Delhi Ncr</Select.Option>
-                    <Select.Option value={"surat"}>Surat</Select.Option>
+                    {tenantData?.map((item: Tenant) => {
+                      return (
+                        <Select.Option key={item.id} value={item.id}>
+                          {item.name}
+                        </Select.Option>
+                      );
+                    })}
                   </Select>
                 </Form.Item>
               </Col>

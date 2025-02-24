@@ -21,3 +21,8 @@ export const createTenant = (data: Tenant) =>
   api.post(`${AUTH_SERVICE}/tenants`, data);
 export const updateTenant = (data: Tenant, id: number) =>
   api.patch(`${AUTH_SERVICE}/tenants/${id}`, data);
+
+//catalog service
+
+export const getCategories = (queryString?: string) =>
+  api.get(`${CATALOG_SERVICE}/category?${queryString && queryString}`);
