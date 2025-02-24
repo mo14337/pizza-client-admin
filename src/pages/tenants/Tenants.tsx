@@ -156,7 +156,7 @@ const Tenants = () => {
             separator={<RightOutlined />}
             items={[
               { title: <Link to="/">Dashboard</Link> },
-              { title: "Users" },
+              { title: "Tenants" },
             ]}
           />
           {isFetching && <Spin indicator={<LoadingOutlined />} />}
