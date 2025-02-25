@@ -35,3 +35,24 @@ export interface ICategory {
   priceConfiguration: PriceConfiguration;
   attributes: Attribute[];
 }
+
+interface priceConfiguration {
+  priceType: string;
+  availableOptions: Map<string, number>;
+}
+
+export interface IProduct {
+  _id?: string;
+  name: string;
+  description: string;
+  image: string;
+  priceConfiguration: Map<string, priceConfiguration>;
+  attributes: {
+    name: string;
+    value: string | number;
+  }[];
+  tenantId: string;
+  categoryId: string;
+  isPublish: boolean;
+  createdAt: string;
+}
