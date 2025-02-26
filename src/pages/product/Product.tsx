@@ -1,5 +1,19 @@
-import { Breadcrumb, Button, Flex, Form, Image, Space, Table, Tag } from "antd";
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  Breadcrumb,
+  Button,
+  Flex,
+  Form,
+  Image,
+  Space,
+  Spin,
+  Table,
+  Tag,
+} from "antd";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import ProductFilters from "./component/ProductFilters";
 // import { IProduct } from "../../types";
@@ -74,7 +88,12 @@ const Product = () => {
     currentPage: currentPage,
   });
 
-  const { data: productsData } = useQuery({
+  const {
+    data: productsData,
+    isFetching,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products", queryParams],
     queryFn: async () => {
       const filtredParams = Object.entries(queryParams).filter(
@@ -94,6 +113,7 @@ const Product = () => {
     }, 500);
   }, []);
   const onFilterChange = (changeField: FieldData[]) => {
+    console.log(changeField);
     const changeFilterFields = changeField
       .map((item) => {
         return {
@@ -122,6 +142,8 @@ const Product = () => {
               { title: "Products" },
             ]}
           />
+          {isFetching && <Spin indicator={<LoadingOutlined />} />}
+          {isError && <div>{error.message}</div>}
         </Flex>
         <Form form={filterForm} onFieldsChange={onFilterChange}>
           <ProductFilters>
@@ -135,17 +157,17 @@ const Product = () => {
           </ProductFilters>
         </Form>
         <Table
-          // pagination={{
-          //   // total: usersData?.total,
-          //   // pageSize: queryParams.perPage,
-          //   // current: queryParams.currentPage,
-          //   // onChange: (page) => {
-          //   //   setQueryParams((prev) => ({
-          //   //     ...prev,
-          //   //     currentPage: page,
-          //   //   }));
-          //   // },
-          // }}
+          pagination={{
+            total: productsData?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            onChange: (page) => {
+              setQueryParams((prev) => ({
+                ...prev,
+                currentPage: page,
+              }));
+            },
+          }}
           columns={[
             ...columns,
             {
