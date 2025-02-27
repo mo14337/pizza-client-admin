@@ -113,7 +113,6 @@ const Product = () => {
     }, 500);
   }, []);
   const onFilterChange = (changeField: FieldData[]) => {
-    console.log(changeField);
     const changeFilterFields = changeField
       .map((item) => {
         return {

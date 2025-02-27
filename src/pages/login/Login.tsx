@@ -97,7 +97,6 @@ const Login: React.FC = () => {
                   password: values.password,
                   remember: values.remember,
                 });
-                // console.log(values);
               }}
               initialValues={{ remember: true }}
             >
