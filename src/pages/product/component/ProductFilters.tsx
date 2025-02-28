@@ -7,8 +7,10 @@ import { Typography } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories, getTenants } from "../../../http/api";
 import { ICategory, Tenant } from "../../../types";
+import { useAuthStore } from "../../../store";
 const { Text } = Typography;
 const ProductFilters = ({ children }: ProductFilterProps) => {
+  const { user } = useAuthStore();
   const { data: tenantData } = useQuery({
     queryKey: ["tenants"],
     queryFn: async () => {
@@ -50,28 +52,30 @@ const ProductFilters = ({ children }: ProductFilterProps) => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={6}>
-                <Form.Item name={"tenantId"}>
-                  <Select
-                    id="tenant"
-                    style={{ width: "100%" }}
-                    allowClear
-                    placeholder="Select Tenant"
-                  >
-                    {tenantData?.map((item: Tenant) => {
-                      return (
-                        <Select.Option key={item.id} value={item.id}>
-                          {item.name}
-                        </Select.Option>
-                      );
-                    })}
-                  </Select>
-                </Form.Item>
-              </Col>
+              {user!.role === "admin" && (
+                <Col span={6}>
+                  <Form.Item name={"tenantId"}>
+                    <Select
+                      id="tenant"
+                      style={{ width: "100%" }}
+                      allowClear
+                      placeholder="Select Tenant"
+                    >
+                      {tenantData?.map((item: Tenant) => {
+                        return (
+                          <Select.Option key={item.id} value={item.id}>
+                            {item.name}
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              )}
               <Col span={6}>
                 <Space>
                   <Form.Item name={"isPublish"}>
-                    <Switch defaultChecked />
+                    <Switch />
                   </Form.Item>
                   <Text>Show Only Published</Text>
                 </Space>

@@ -29,6 +29,7 @@ import { debounce } from "lodash";
 import { FieldData, IProduct } from "../../types";
 import { Typography } from "antd";
 import { format } from "date-fns";
+import { useAuthStore } from "../../store";
 const { Text } = Typography;
 
 const columns = [
@@ -82,10 +83,12 @@ const columns = [
 
 const Product = () => {
   const [filterForm] = Form.useForm();
+  const { user } = useAuthStore();
   // const queryClient = useQueryClient();
   const [queryParams, setQueryParams] = useState({
     perPage: perPage,
     currentPage: currentPage,
+    tenantId: user!.role === "manager" ? user?.tenant?.id : undefined,
   });
 
   const {
