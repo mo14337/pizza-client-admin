@@ -1,6 +1,7 @@
 import {
   Breadcrumb,
   Button,
+  Drawer,
   Flex,
   Form,
   Image,
@@ -8,6 +9,7 @@ import {
   Spin,
   Table,
   Tag,
+  theme,
 } from "antd";
 import {
   LoadingOutlined,
@@ -30,6 +32,7 @@ import { FieldData, IProduct } from "../../types";
 import { Typography } from "antd";
 import { format } from "date-fns";
 import { useAuthStore } from "../../store";
+import ProductForm from "./component/ProductForm";
 const { Text } = Typography;
 
 const columns = [
@@ -84,6 +87,13 @@ const columns = [
 const Product = () => {
   const [filterForm] = Form.useForm();
   const { user } = useAuthStore();
+  const [form] = Form.useForm();
+  const [addProductDrawerOpen, setAddProductDrawerOpen] = useState(false);
+  const [currentEditingProduct, setCurrentEditingProduct] =
+    useState<IProduct | null>(null);
+  const {
+    token: { colorBgLayout },
+  } = theme.useToken();
   // const queryClient = useQueryClient();
   const [queryParams, setQueryParams] = useState({
     perPage: perPage,
@@ -133,6 +143,21 @@ const Product = () => {
       }));
     }
   };
+  async function handleSubmit() {
+    // const isEditMode = !!currentEditingProduct;
+    await form.validateFields();
+    // console.log(form.getFieldValue())
+
+    // if (isEditMode) {
+    //   await updateUserMutation(form.getFieldsValue());
+    // } else {
+    //   await createUserMutation(form.getFieldsValue());
+    // }
+
+    // setAddUserDrawerOpen(false);
+    // form.resetFields();
+    // setCurrentEditingUser(null);
+  }
   return (
     <>
       <Space direction="vertical" size={"middle"} style={{ width: "100%" }}>
@@ -150,7 +175,7 @@ const Product = () => {
         <Form form={filterForm} onFieldsChange={onFilterChange}>
           <ProductFilters>
             <Button
-              // onClick={() => setAddUserDrawerOpen(true)}
+              onClick={() => setAddProductDrawerOpen(true)}
               icon={<PlusOutlined />}
               type="primary"
             >
@@ -188,6 +213,42 @@ const Product = () => {
           rowKey={"id"}
           dataSource={productsData?.data}
         />
+        <Drawer
+          styles={{
+            body: {
+              background: colorBgLayout,
+            },
+          }}
+          open={addProductDrawerOpen}
+          title={currentEditingProduct ? "Edit Product" : "Create Product"}
+          width={720}
+          destroyOnClose={true}
+          onClose={() => {
+            setAddProductDrawerOpen(false);
+            setCurrentEditingProduct(null);
+            // form.resetFields();
+          }}
+          extra={
+            <Space>
+              <Button
+                onClick={() => {
+                  setAddProductDrawerOpen(false);
+                  setCurrentEditingProduct(null);
+                  // form.resetFields();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} type="primary">
+                Submit
+              </Button>
+            </Space>
+          }
+        >
+          <Form autoComplete="off" layout="vertical" form={form}>
+            <ProductForm />
+          </Form>
+        </Drawer>
       </Space>
     </>
   );
