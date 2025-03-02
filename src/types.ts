@@ -23,6 +23,7 @@ export interface PriceConfiguration {
 }
 
 export interface Attribute {
+  _id?: string;
   name: string;
   widgetType: "switch" | "radio";
   defaultValue: string;

@@ -7,7 +7,6 @@ const Pricing = ({ selectedCategory }: { selectedCategory: string }) => {
   const category: ICategory | null = selectedCategory
     ? JSON.parse(selectedCategory)
     : null;
-  console.log(category);
   return (
     <Card title="Product Price" bordered={false}>
       {category &&

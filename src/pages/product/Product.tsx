@@ -146,7 +146,7 @@ const Product = () => {
   async function handleSubmit() {
     // const isEditMode = !!currentEditingProduct;
     await form.validateFields();
-    // console.log(form.getFieldValue())
+    // console.log(await form.getFieldValue());
 
     // if (isEditMode) {
     //   await updateUserMutation(form.getFieldsValue());
