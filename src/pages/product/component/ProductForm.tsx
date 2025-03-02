@@ -14,9 +14,13 @@ import { getCategories, getTenants } from "../../../http/api";
 import { ICategory, Tenant } from "../../../types";
 import { PlusOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
+import { useWatch } from "antd/es/form/Form";
+import Pricing from "./Pricing";
+import Attributes from "./Attributes";
 const { Text } = Typography;
 
 const ProductForm = () => {
+  const selectedCategory = useWatch("categoryId");
   const { data: tenantData } = useQuery({
     queryKey: ["tenants"],
     queryFn: async () => {
@@ -68,7 +72,10 @@ const ProductForm = () => {
                       size="large"
                     >
                       {catgeoryData.map((category: ICategory) => (
-                        <Select.Option key={category._id} value={category._id}>
+                        <Select.Option
+                          key={category._id}
+                          value={JSON.stringify(category)}
+                        >
                           {category.name}
                         </Select.Option>
                       ))}
@@ -120,6 +127,10 @@ const ProductForm = () => {
                 </Col>
               </Row>
             </Card>
+            {selectedCategory && (
+              <Pricing selectedCategory={selectedCategory} />
+            )}
+            {selectedCategory && <Attributes />}
             <Card title="Tenant info" bordered={false}>
               <Row gutter={20}>
                 <Col span={24}>
