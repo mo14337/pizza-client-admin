@@ -57,3 +57,5 @@ export interface IProduct {
   isPublish: boolean;
   createdAt: string;
 }
+export type ImageFiled = { file: File };
+export type CreateProductData = IProduct & { image: ImageFiled };

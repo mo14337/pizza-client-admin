@@ -4,11 +4,13 @@ import {
   Col,
   Form,
   Input,
+  message,
   Row,
   Select,
   Space,
   Switch,
   Upload,
+  UploadProps,
 } from "antd";
 import { getCategories, getTenants } from "../../../http/api";
 import { ICategory, Tenant } from "../../../types";
@@ -17,9 +19,12 @@ import { Typography } from "antd";
 import { useWatch } from "antd/es/form/Form";
 import Pricing from "./Pricing";
 import Attributes from "./Attributes";
+import { useState } from "react";
 const { Text } = Typography;
 
 const ProductForm = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const selectedCategory = useWatch("categoryId");
   const { data: tenantData } = useQuery({
     queryKey: ["tenants"],
@@ -33,6 +38,20 @@ const ProductForm = () => {
       return await getCategories().then((res) => res.data.data);
     },
   });
+  const uploadConfig: UploadProps = {
+    name: "file",
+    multiple: false,
+    showUploadList: false,
+    beforeUpload: (file) => {
+      const isJpgOrPng = file.type === "image/jpeg";
+      if (!isJpgOrPng) {
+        messageApi.error("You can only upload JPG/PNG file!");
+      }
+      setImageUrl(URL.createObjectURL(file));
+
+      return false;
+    },
+  };
   return (
     <>
       <Row>
@@ -117,11 +136,20 @@ const ProductForm = () => {
                     label="Product Image"
                     name={"image"}
                   >
-                    <Upload listType="picture-card">
-                      <Space direction="vertical">
-                        <PlusOutlined />
-                        <Text>Upload</Text>
-                      </Space>
+                    {contextHolder}
+                    <Upload {...uploadConfig} listType="picture-card">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt="avatar"
+                          style={{ width: "100%" }}
+                        />
+                      ) : (
+                        <Space direction="vertical">
+                          <PlusOutlined />
+                          <Text>Upload</Text>
+                        </Space>
+                      )}
                     </Upload>
                   </Form.Item>
                 </Col>

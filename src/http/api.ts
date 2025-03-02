@@ -1,5 +1,5 @@
 import { CreateUser } from "../store";
-import { ICredentials, Tenant } from "../types";
+import { ICredentials, IProduct, Tenant } from "../types";
 import { api } from "./client";
 
 export const AUTH_SERVICE = "/auth-service";
@@ -28,3 +28,9 @@ export const getCategories = (queryString?: string) =>
   api.get(`${CATALOG_SERVICE}/category?${queryString && queryString}`);
 export const getProducts = (queryString?: string) =>
   api.get(`${CATALOG_SERVICE}/product?${queryString && queryString}`);
+export const createProduct = (product: IProduct) =>
+  api.post(`${CATALOG_SERVICE}/product`, product, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });

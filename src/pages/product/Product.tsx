@@ -23,16 +23,19 @@ import { currentPage, perPage } from "../../constant";
 import { useMemo, useState } from "react";
 import {
   keepPreviousData,
+  useMutation,
   useQuery,
+  useQueryClient,
   // useQueryClient,
 } from "@tanstack/react-query";
-import { getProducts } from "../../http/api";
+import { createProduct, getProducts } from "../../http/api";
 import { debounce } from "lodash";
 import { FieldData, IProduct } from "../../types";
 import { Typography } from "antd";
 import { format } from "date-fns";
 import { useAuthStore } from "../../store";
 import ProductForm from "./component/ProductForm";
+import { makeFormData } from "./helpers";
 const { Text } = Typography;
 
 const columns = [
@@ -85,6 +88,7 @@ const columns = [
 ];
 
 const Product = () => {
+  const queryClient = useQueryClient();
   const [filterForm] = Form.useForm();
   const { user } = useAuthStore();
   const [form] = Form.useForm();
@@ -99,6 +103,15 @@ const Product = () => {
     perPage: perPage,
     currentPage: currentPage,
     tenantId: user!.role === "manager" ? user?.tenant?.id : undefined,
+  });
+
+  const { mutate: createProductMutation } = useMutation({
+    mutationKey: ["createProduct"],
+    mutationFn: async (data: IProduct) =>
+      createProduct(data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
   });
 
   const {
@@ -144,19 +157,50 @@ const Product = () => {
     }
   };
   async function handleSubmit() {
-    // const isEditMode = !!currentEditingProduct;
+    const isEditMode = !!currentEditingProduct;
     await form.validateFields();
-    // console.log(await form.getFieldValue());
 
-    // if (isEditMode) {
-    //   await updateUserMutation(form.getFieldsValue());
-    // } else {
-    //   await createUserMutation(form.getFieldsValue());
-    // }
+    const priceConfiguration = form.getFieldValue("priceConfiguration");
+    const pricing = Object.entries(priceConfiguration).reduce(
+      (acc, [key, value]) => {
+        const parsedKey = JSON.parse(key);
+        return {
+          ...acc,
+          [parsedKey.configurationKey]: {
+            priceType: parsedKey.priceType,
+            availableOptions: value,
+          },
+        };
+      },
+      {}
+    );
+    const categoryId = JSON.parse(form.getFieldValue("categoryId"))._id;
+    const attributes = Object.entries(form.getFieldValue("attributes")).map(
+      ([key, value]) => {
+        return {
+          name: key,
+          value,
+        };
+      }
+    );
+    const productData = {
+      ...form.getFieldsValue(),
+      image: form.getFieldValue("image"),
+      isPublish: form.getFieldValue("isPublish") ? true : false,
+      priceConfiguration: pricing,
+      categoryId,
+      attributes,
+    };
+    const formData = makeFormData(productData);
+    if (isEditMode && formData) {
+      // await updateUserMutation(form.getFieldsValue());
+    } else {
+      await createProductMutation(formData as unknown as IProduct);
+    }
 
-    // setAddUserDrawerOpen(false);
-    // form.resetFields();
-    // setCurrentEditingUser(null);
+    setAddProductDrawerOpen(false);
+    form.resetFields();
+    setCurrentEditingProduct(null);
   }
   return (
     <>
