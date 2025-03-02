@@ -7,10 +7,12 @@ import { useWatch } from "antd/es/form/Form";
 import Pricing from "./Pricing";
 import Attributes from "./Attributes";
 import ProductImage from "./ProductImage";
+import { useAuthStore } from "../../../store";
 const { Text } = Typography;
 
 const ProductForm = () => {
   const selectedCategory = useWatch("categoryId");
+  const { user } = useAuthStore();
   const { data: tenantData } = useQuery({
     queryKey: ["tenants"],
     queryFn: async () => {
@@ -108,37 +110,39 @@ const ProductForm = () => {
             {selectedCategory && (
               <Attributes selectedCategory={selectedCategory} />
             )}
-            <Card title="Tenant info" bordered={false}>
-              <Row gutter={20}>
-                <Col span={24}>
-                  <Form.Item
-                    rules={[
-                      {
-                        required: true,
-                        message: "Tenant is required",
-                      },
-                    ]}
-                    label="Tenant"
-                    name={"tenantId"}
-                  >
-                    <Select
-                      style={{ width: "100%" }}
-                      allowClear
-                      placeholder="Select Tenant"
-                      size="large"
+            {user?.role !== "manager" && (
+              <Card title="Tenant info" bordered={false}>
+                <Row gutter={20}>
+                  <Col span={24}>
+                    <Form.Item
+                      rules={[
+                        {
+                          required: true,
+                          message: "Tenant is required",
+                        },
+                      ]}
+                      label="Tenant"
+                      name={"tenantId"}
                     >
-                      {tenantData?.map((tenant: Tenant) => {
-                        return (
-                          <Select.Option key={tenant.id} value={tenant.id}>
-                            {tenant.name}
-                          </Select.Option>
-                        );
-                      })}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
+                      <Select
+                        style={{ width: "100%" }}
+                        allowClear
+                        placeholder="Select Tenant"
+                        size="large"
+                      >
+                        {tenantData?.map((tenant: Tenant) => {
+                          return (
+                            <Select.Option key={tenant.id} value={tenant.id}>
+                              {tenant.name}
+                            </Select.Option>
+                          );
+                        })}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Card>
+            )}
             <Card title="Other info" bordered={false}>
               <Row gutter={20}>
                 <Col span={12}>

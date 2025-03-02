@@ -186,6 +186,10 @@ const Product = () => {
     );
     const productData = {
       ...form.getFieldsValue(),
+      tenantId:
+        user!.role === "manager"
+          ? user?.tenant?.id
+          : form.getFieldValue("tenantId"),
       image: form.getFieldValue("image"),
       isPublish: form.getFieldValue("isPublish") ? true : false,
       priceConfiguration: pricing,
