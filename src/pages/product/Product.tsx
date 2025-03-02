@@ -105,14 +105,15 @@ const Product = () => {
     tenantId: user!.role === "manager" ? user?.tenant?.id : undefined,
   });
 
-  const { mutate: createProductMutation } = useMutation({
-    mutationKey: ["createProduct"],
-    mutationFn: async (data: IProduct) =>
-      createProduct(data).then((res) => res.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
+  const { mutate: createProductMutation, isPending: isCreateLoading } =
+    useMutation({
+      mutationKey: ["createProduct"],
+      mutationFn: async (data: IProduct) =>
+        createProduct(data).then((res) => res.data),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+      },
+    });
 
   const {
     data: productsData,
@@ -283,7 +284,11 @@ const Product = () => {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} type="primary">
+              <Button
+                onClick={handleSubmit}
+                type="primary"
+                loading={isCreateLoading}
+              >
                 Submit
               </Button>
             </Space>
