@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import ProductFilters from "./component/ProductFilters";
 // import { IProduct } from "../../types";
 import { currentPage, perPage } from "../../constant";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   keepPreviousData,
   useMutation,
@@ -114,6 +114,39 @@ const Product = () => {
         queryClient.invalidateQueries({ queryKey: ["products"] });
       },
     });
+  useEffect(() => {
+    if (currentEditingProduct) {
+      setAddProductDrawerOpen(true);
+    }
+    if (currentEditingProduct) {
+      const priceConfiguration = Object.entries(
+        currentEditingProduct.priceConfiguration
+      ).reduce((acc, [key, value]) => {
+        const stringifiedField = JSON.stringify({
+          configurationKey: key,
+          priceType: value.priceType,
+        });
+        return {
+          ...acc,
+          [stringifiedField]: value.availableOptions,
+        };
+      }, {});
+      const attributes = currentEditingProduct.attributes.reduce(
+        (acc, item) => {
+          return { ...acc, [item.name]: item.value };
+        },
+        {}
+      );
+      console.log(priceConfiguration, attributes);
+      form.setFieldsValue({
+        ...currentEditingProduct,
+        priceConfiguration,
+        attributes,
+        categoryId: currentEditingProduct.category._id,
+      });
+      setAddProductDrawerOpen(true);
+    }
+  }, [currentEditingProduct, form]);
 
   const {
     data: productsData,
@@ -175,7 +208,6 @@ const Product = () => {
       },
       {}
     );
-    const categoryId = JSON.parse(form.getFieldValue("categoryId"))._id;
     const attributes = Object.entries(form.getFieldValue("attributes")).map(
       ([key, value]) => {
         return {
@@ -193,7 +225,6 @@ const Product = () => {
       image: form.getFieldValue("image"),
       isPublish: form.getFieldValue("isPublish") ? true : false,
       priceConfiguration: pricing,
-      categoryId,
       attributes,
     };
     const formData = makeFormData(productData);
@@ -248,10 +279,15 @@ const Product = () => {
             ...columns,
             {
               title: "Actions",
-              render: () => {
+              render: (_text, record: IProduct) => {
                 return (
                   <Space>
-                    <Button onClick={() => {}} type="link">
+                    <Button
+                      onClick={() => {
+                        setCurrentEditingProduct(record);
+                      }}
+                      type="link"
+                    >
                       Edit
                     </Button>
                   </Space>
@@ -275,7 +311,7 @@ const Product = () => {
           onClose={() => {
             setAddProductDrawerOpen(false);
             setCurrentEditingProduct(null);
-            // form.resetFields();
+            form.resetFields();
           }}
           extra={
             <Space>
@@ -283,7 +319,7 @@ const Product = () => {
                 onClick={() => {
                   setAddProductDrawerOpen(false);
                   setCurrentEditingProduct(null);
-                  // form.resetFields();
+                  form.resetFields();
                 }}
               >
                 Cancel
@@ -299,7 +335,7 @@ const Product = () => {
           }
         >
           <Form autoComplete="off" layout="vertical" form={form}>
-            <ProductForm />
+            <ProductForm form={form} />
           </Form>
         </Drawer>
       </Space>

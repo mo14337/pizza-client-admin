@@ -1,14 +1,20 @@
 import { Card, Col, Form, Radio, Row, Switch } from "antd";
 import { Attribute, ICategory } from "../../../types";
+import { useQuery } from "@tanstack/react-query";
+import { getCategory } from "../../../http/api";
 
 const Attributes = ({ selectedCategory }: { selectedCategory: string }) => {
-  const category: ICategory | null = selectedCategory
-    ? JSON.parse(selectedCategory)
-    : null;
+  const { data: category } = useQuery<ICategory>({
+    queryKey: ["category"],
+    queryFn: async () => {
+      return await getCategory(selectedCategory).then((res) => res.data.data);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
   if (!category) return null;
   return (
     <Card title="Attributes" bordered={false}>
-      {category.attributes.map((attribute: Attribute) => {
+      {category?.attributes?.map((attribute: Attribute) => {
         return (
           <div key={attribute._id}>
             {attribute.widgetType === "radio" ? (
@@ -24,7 +30,7 @@ const Attributes = ({ selectedCategory }: { selectedCategory: string }) => {
                 ]}
               >
                 <Radio.Group>
-                  {attribute.availableOptions.map((option) => (
+                  {attribute.availableOptions?.map((option) => (
                     <Radio.Button key={option} value={option}>
                       {option}
                     </Radio.Button>

@@ -53,7 +53,7 @@ export interface IProduct {
     value: string | number;
   }[];
   tenantId: string;
-  categoryId: string;
+  category: ICategory;
   isPublish: boolean;
   createdAt: string;
 }

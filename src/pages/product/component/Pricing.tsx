@@ -1,16 +1,23 @@
 import { Card, Col, Form, InputNumber, Row, Space } from "antd";
-import { ICategory } from "../../../types";
 import { Typography } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { getCategory } from "../../../http/api";
+import { ICategory } from "../../../types";
 const { Text } = Typography;
 
 const Pricing = ({ selectedCategory }: { selectedCategory: string }) => {
-  const category: ICategory | null = selectedCategory
-    ? JSON.parse(selectedCategory)
-    : null;
+  const { data: category } = useQuery<ICategory>({
+    queryKey: ["category"],
+    queryFn: async () => {
+      return await getCategory(selectedCategory).then((res) => res.data.data);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+  if (!category) return null;
   return (
     <Card title="Product Price" bordered={false}>
       {category &&
-        Object.entries(category.priceConfiguration).map(
+        Object.entries(category?.priceConfiguration)?.map(
           ([configurationKey, configurationValue]) => {
             return (
               <div key={configurationKey}>
@@ -21,7 +28,7 @@ const Pricing = ({ selectedCategory }: { selectedCategory: string }) => {
                 >
                   <Text>{`${configurationKey} (${configurationValue.priceType})`}</Text>
                   <Row gutter={20}>
-                    {configurationValue.availableOptions.map(
+                    {configurationValue.availableOptions?.map(
                       (option, index) => (
                         <Col span={8} key={index}>
                           <Form.Item

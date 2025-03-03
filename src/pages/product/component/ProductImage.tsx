@@ -4,9 +4,9 @@ import { useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 const { Text } = Typography;
 
-const ProductImage = () => {
+const ProductImage = ({ initialImage }: { initialImage: string }) => {
   const [messageApi, contextHolder] = message.useMessage();
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(initialImage);
   const uploadConfig: UploadProps = {
     name: "file",
     multiple: false,

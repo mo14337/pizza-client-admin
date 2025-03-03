@@ -3,14 +3,14 @@ import { Card, Col, Form, Input, Row, Select, Space, Switch } from "antd";
 import { getCategories, getTenants } from "../../../http/api";
 import { ICategory, Tenant } from "../../../types";
 import { Typography } from "antd";
-import { useWatch } from "antd/es/form/Form";
+import { FormInstance, useWatch } from "antd/es/form/Form";
 import Pricing from "./Pricing";
 import Attributes from "./Attributes";
 import ProductImage from "./ProductImage";
 import { useAuthStore } from "../../../store";
 const { Text } = Typography;
 
-const ProductForm = () => {
+const ProductForm = ({ form }: { form: FormInstance }) => {
   const selectedCategory = useWatch("categoryId");
   const { user } = useAuthStore();
   const { data: tenantData } = useQuery({
@@ -64,11 +64,8 @@ const ProductForm = () => {
                       placeholder="Select Category"
                       size="large"
                     >
-                      {catgeoryData.map((category: ICategory) => (
-                        <Select.Option
-                          key={category._id}
-                          value={JSON.stringify(category)}
-                        >
+                      {catgeoryData?.map((category: ICategory) => (
+                        <Select.Option key={category._id} value={category._id}>
                           {category.name}
                         </Select.Option>
                       ))}
@@ -100,7 +97,7 @@ const ProductForm = () => {
             <Card title="Product Image" bordered={false}>
               <Row gutter={20}>
                 <Col span={12}>
-                  <ProductImage />
+                  <ProductImage initialImage={form.getFieldValue("image")} />
                 </Col>
               </Row>
             </Card>
@@ -132,7 +129,10 @@ const ProductForm = () => {
                       >
                         {tenantData?.map((tenant: Tenant) => {
                           return (
-                            <Select.Option key={tenant.id} value={tenant.id}>
+                            <Select.Option
+                              key={tenant.id}
+                              value={String(tenant.id)}
+                            >
                               {tenant.name}
                             </Select.Option>
                           );
