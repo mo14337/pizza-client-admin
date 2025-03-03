@@ -28,7 +28,7 @@ import {
   useQueryClient,
   // useQueryClient,
 } from "@tanstack/react-query";
-import { createProduct, getProducts } from "../../http/api";
+import { createProduct, getProducts, updateProduct } from "../../http/api";
 import { debounce } from "lodash";
 import { FieldData, IProduct } from "../../types";
 import { Typography } from "antd";
@@ -114,6 +114,17 @@ const Product = () => {
         queryClient.invalidateQueries({ queryKey: ["products"] });
       },
     });
+  const { mutate: updateProductMutation, isPending: isUpdateLoading } =
+    useMutation({
+      mutationKey: ["createProduct"],
+      mutationFn: async (data: IProduct) =>
+        updateProduct(data, currentEditingProduct!._id!).then(
+          (res) => res.data
+        ),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["products"] });
+      },
+    });
   useEffect(() => {
     if (currentEditingProduct) {
       setAddProductDrawerOpen(true);
@@ -137,7 +148,6 @@ const Product = () => {
         },
         {}
       );
-      console.log(priceConfiguration, attributes);
       form.setFieldsValue({
         ...currentEditingProduct,
         priceConfiguration,
@@ -229,7 +239,7 @@ const Product = () => {
     };
     const formData = makeFormData(productData);
     if (isEditMode && formData) {
-      // await updateUserMutation(form.getFieldsValue());
+      await updateProductMutation(formData as unknown as IProduct);
     } else {
       await createProductMutation(formData as unknown as IProduct);
     }
@@ -327,7 +337,7 @@ const Product = () => {
               <Button
                 onClick={handleSubmit}
                 type="primary"
-                loading={isCreateLoading}
+                loading={isCreateLoading || isUpdateLoading}
               >
                 Submit
               </Button>

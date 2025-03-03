@@ -36,3 +36,9 @@ export const createProduct = (product: IProduct) =>
   });
 export const getCategory = (id?: string) =>
   api.get(`${CATALOG_SERVICE}/category/${id}`);
+export const updateProduct = (product: IProduct, id: string) =>
+  api.put(`${CATALOG_SERVICE}/product/${id}`, product, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
