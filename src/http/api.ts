@@ -1,9 +1,12 @@
 import { CreateUser } from "../store";
-import { ICredentials, IProduct, Tenant } from "../types";
+import { ICredentials, IProduct, OrderStatus, Tenant } from "../types";
 import { api } from "./client";
 
 export const AUTH_SERVICE = "/auth-service";
 export const CATALOG_SERVICE = "/catalog-service";
+export const ORDER_SERVICE = "/billing";
+//localhost:8000/billing/order/orders
+
 //Auth service
 export const login = (credetials: ICredentials) =>
   api.post(`${AUTH_SERVICE}/auth/login`, credetials);
@@ -42,3 +45,12 @@ export const updateProduct = (product: IProduct, id: string) =>
       "Content-Type": "multipart/form-data",
     },
   });
+
+// billing service
+
+export const getOrders = (queryString: string) =>
+  api.get(`${ORDER_SERVICE}/order?${queryString}`);
+export const getSingle = (orderId: string, queryString: string) =>
+  api.get(`${ORDER_SERVICE}/orders/${orderId}?${queryString}`);
+export const changeStatus = (orderId: string, data: { status: OrderStatus }) =>
+  api.patch(`${ORDER_SERVICE}/orders/change-status/${orderId}`, data);
