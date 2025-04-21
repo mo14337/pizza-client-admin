@@ -16,6 +16,7 @@ import {
   BellOutlined,
   GiftOutlined,
   HomeOutlined,
+  OrderedListOutlined,
   ProductOutlined,
   ShopOutlined,
   UserOutlined,
@@ -42,6 +43,11 @@ const getMenuItems = (role: string) => {
       key: "/promos",
       icon: <GiftOutlined />,
       label: <NavLink to={"/promos"}>Promos</NavLink>,
+    },
+    {
+      key: "/orders",
+      icon: <OrderedListOutlined />,
+      label: <NavLink to={"/orders"}>Orders</NavLink>,
     },
   ];
   if (role === "admin") {
