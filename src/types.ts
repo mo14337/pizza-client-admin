@@ -89,7 +89,7 @@ export type Topping = {
 
 export interface CartItem
   extends Pick<IProduct, "_id" | "name" | "image" | "priceConfiguration"> {
-  chosenConfiguration: {
+  choosenConfiguration: {
     priceConfiguration: {
       [key: string]: string;
     };
