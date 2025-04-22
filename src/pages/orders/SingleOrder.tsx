@@ -63,8 +63,8 @@ const SingleOrder = () => {
 
   const { mutate } = useMutation({
     mutationKey: ["order", orderId],
-    mutationFn: (status: OrderStatus) => {
-      return changeStatus(orderId as string, { status }).then(
+    mutationFn: async (status: OrderStatus) => {
+      return await changeStatus(orderId as string, { status }).then(
         (res) => res.data
       );
     },
@@ -80,8 +80,6 @@ const SingleOrder = () => {
   const handleStatusChange = (status: OrderStatus) => {
     mutate(status);
   };
-
-  console.log("order", order);
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
       <Flex justify="space-between">

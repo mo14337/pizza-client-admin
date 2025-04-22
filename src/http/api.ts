@@ -53,4 +53,4 @@ export const getOrders = (queryString: string) =>
 export const getSingle = (orderId: string, queryString: string) =>
   api.get(`${ORDER_SERVICE}/order/orders/${orderId}?${queryString}`);
 export const changeStatus = (orderId: string, data: { status: OrderStatus }) =>
-  api.patch(`${ORDER_SERVICE}/orders/change-status/${orderId}`, data);
+  api.patch(`${ORDER_SERVICE}/order/changeStatus/${orderId}`, data);
