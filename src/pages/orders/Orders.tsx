@@ -147,14 +147,13 @@ const Orders = () => {
   //socket
   useEffect(() => {
     if (user?.tenant?.id) {
-      socket.on("order-update", (data) => {
-        console.log("order", data);
-      });
-      socket.emit("join", {
-        tenantId: user?.tenant.id,
-      });
+      socket.emit("join", { tenantId: user?.tenant.id });
+
       socket.on("join", (data) => {
-        console.log("joined", data);
+        console.log("joined room", data);
+        socket.on("order-update", (orderData) => {
+          console.log("Received order update:", orderData);
+        });
       });
     }
 
