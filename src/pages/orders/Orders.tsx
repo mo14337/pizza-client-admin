@@ -131,11 +131,15 @@ const Orders = () => {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["orders", selectedTenant, currentPage, pageSize],
     queryFn: async () => {
+      const tenantId =
+        user?.role === "manager" ? user?.tenant?.id : selectedTenant;
+
       const params = new URLSearchParams({
-        ...(selectedTenant ? { tenantId: String(selectedTenant) } : {}),
+        ...(tenantId ? { tenantId: String(tenantId) } : {}),
         currentPage: String(currentPage),
         perPage: String(pageSize),
       }).toString();
+
       return await getOrders(params).then((res) => res.data);
     },
   });
