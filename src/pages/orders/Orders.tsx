@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Breadcrumb,
   Col,
   Flex,
+  message,
   Select,
   Space,
   Table,
@@ -10,8 +12,14 @@ import {
 } from "antd";
 import { RightOutlined } from "@ant-design/icons";
 import { Link, useSearchParams } from "react-router-dom";
-import { Order, Tenant } from "../../types";
-import { useQuery } from "@tanstack/react-query";
+import {
+  Order,
+  OrderEvents,
+  PaymentMode,
+  PaymentStatus,
+  Tenant,
+} from "../../types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getOrders, getTenants } from "../../http/api";
 import { format } from "date-fns";
 import { capitalizeFirst } from "../product/helpers";
@@ -108,6 +116,8 @@ const columns = [
 const Orders = () => {
   const { user } = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const selectedTenant = searchParams.get("tenantId")
     ? Number(searchParams.get("tenantId"))
@@ -129,7 +139,7 @@ const Orders = () => {
   });
 
   const { data: orders, isLoading } = useQuery({
-    queryKey: ["orders", selectedTenant, currentPage, pageSize],
+    queryKey: ["orders"],
     queryFn: async () => {
       const tenantId =
         user?.role === "manager" ? user?.tenant?.id : selectedTenant;
@@ -152,7 +162,26 @@ const Orders = () => {
       socket.on("join", (data) => {
         console.log("joined room", data);
         socket.on("order-update", (orderData) => {
-          console.log("Received order update:", orderData);
+          if (
+            (orderData.event_type === OrderEvents.ORDER_CREATE &&
+              orderData.data.paymentMode === PaymentMode.CASH) ||
+            orderData.event_type ===
+              (OrderEvents.PAYMENT_STATUS_UPDATE &&
+                data.data.paymentStatus === PaymentStatus.PAID &&
+                data.data.paymentMode === PaymentMode.CARD)
+          ) {
+            queryClient.setQueryData(
+              ["orders"],
+              (old: { data: Order[] } | undefined) => ({
+                ...old,
+                data: [orderData.data, ...(old?.data || [])],
+              })
+            );
+            messageApi.open({
+              type: "success",
+              content: "New order recived",
+            });
+          }
         });
       });
     }
@@ -161,10 +190,11 @@ const Orders = () => {
       socket.off("join");
       socket.off("order-update");
     };
-  }, [user]);
+  }, [user, queryClient]);
 
   return (
     <>
+      {contextHolder}
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <Flex justify="space-between">
           <Breadcrumb
